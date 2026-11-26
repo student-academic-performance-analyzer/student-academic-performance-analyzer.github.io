@@ -110,4 +110,39 @@ function renderStudents() {
     emptyMessage.hidden = students.length > 0;
 }
 
-renderStudents();
+renderStudents();if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+        navigator.serviceWorker
+            .register("./service-worker.js")
+            .then(function () {
+                console.log("Service worker registered.");
+            })
+            .catch(function (error) {
+                console.error("Service worker registration failed:", error);
+            });
+    });
+}let deferredInstallPrompt = null;
+const installButton = document.getElementById("install-button");
+
+window.addEventListener("beforeinstallprompt", function (event) {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    installButton.hidden = false;
+});
+
+installButton.addEventListener("click", async function () {
+    if (!deferredInstallPrompt) {
+        return;
+    }
+
+    await deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+
+    deferredInstallPrompt = null;
+    installButton.hidden = true;
+});
+
+window.addEventListener("appinstalled", function () {
+    deferredInstallPrompt = null;
+    installButton.hidden = true;
+});
